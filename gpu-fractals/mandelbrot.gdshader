@@ -1,7 +1,11 @@
 shader_type canvas_item;
 
 const int MAX_ITERS = 255;
-const float ESCAPE_MAG_SQUARED = 1e6;
+const float ESCAPE_MAG_SQUARED = 4.0;
+
+// Takes the form (x, y, width, height), where x, y is the top left
+// of the bounds
+instance uniform vec4 mandelbrot_bounds = vec4(-2.0, 1.0, 2.25, 2.25);
 
 struct Complex {
 	float real;
@@ -46,8 +50,17 @@ int mandelbrot(Complex c) {
 
 void fragment() {
 	// Called for every pixel the material is visible on.
-	Complex c = Complex(2.0 * (UV[0] - 0.75), 2.0 * (UV[1] - 0.5));
-		
+	float x = mandelbrot_bounds[0];
+	float y = mandelbrot_bounds[1];
+	float width = mandelbrot_bounds[2];
+	float height = mandelbrot_bounds[3];
+	
+	// Note: UV goes from top left (0, 0) to bottom right (1, 1)
+	// The input coordinate system go from top left (-1, 1) to bottom right (0, 0).
+	// While the x-coordinate is increasing, the y -coordinate is decreasing, requiring
+	// a sign flip.
+	Complex c = Complex(x + width * UV[0], y - height * UV[1]);
+	
 	int i = mandelbrot(c);
 	
 	if (i < 0) {
