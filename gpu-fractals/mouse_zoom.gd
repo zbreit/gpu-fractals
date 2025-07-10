@@ -32,10 +32,12 @@ func _input(event):
 		_:
 			return
 	
-	var x = map_range(mouse_point.x, window_rect.position.x, window_rect.size.x, current_bounds[0], current_bounds[2])
-	var y = map_range(mouse_point.y, window_rect.position.y, window_rect.size.y, current_bounds[1], -current_bounds[3])
+	var x = map_range(mouse_point.x, window_rect.position.x, window_rect.size.x, current_bounds[0], current_bounds[2] - current_bounds[0])
+	var y = map_range(mouse_point.y, window_rect.position.y, window_rect.size.y, current_bounds[1], current_bounds[3] - current_bounds[1])
 	
 	current_bounds = zoom_to(current_bounds, Vector2(x, y), zoom)
+	
+	print("Updating bounds to %v" % current_bounds)
 	
 	set_instance_shader_parameter("mandelbrot_bounds", current_bounds)
 
@@ -63,16 +65,16 @@ func map_range(x: float, x0: float, w0: float, x1: float, w1: float) -> float:
 # 4. z = W / w        <-- The zoom factor scales the input range to the output range
 #
 # You can solve the system of equations via substitution and you get the equations below.
-# bounds = (x, y, width, height)
+# bounds = (x0, y0, x1, y1)
 func zoom_to(bounds: Vector4, point: Vector2, zoom: float) -> Vector4:
 	var X = bounds[0]
 	var Y = bounds[1]
-	var WIDTH = bounds[2]
-	var HEIGHT = bounds[3]
+	var W = bounds[2] - bounds[0]
+	var H = bounds[3] - bounds[1]
 	
-	var x = X + (point[0] - X) * (1 - 1 / zoom)
-	var y = Y + (point[1] - Y) * (1 - 1 / zoom)
-	var width = WIDTH / zoom
-	var height = HEIGHT / zoom
+	var x0 = X + (point[0] - X) * (1 - 1 / zoom)
+	var y0 = Y + (point[1] - Y) * (1 - 1 / zoom)
+	var x1 = x0 + W / zoom
+	var y1 = y0 + H / zoom
 
-	return Vector4(x, y, width, height)
+	return Vector4(x0, y0, x1, y1)
